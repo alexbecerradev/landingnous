@@ -1,4 +1,4 @@
-# FlowState Labs — Dark Mode & Chat Widget Walkthrough
+# Dark Mode & Chat Widget Walkthrough
 
 ## Features Added
 
