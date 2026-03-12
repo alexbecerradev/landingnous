@@ -92,39 +92,45 @@ function Reveal({ children, className = '', delay = 0 }) {
 /* ══════════════════════════════════════════════
    CHAT API SERVICE  (modular, ready for n8n)
    ══════════════════════════════════════════════ */
-const API_ENDPOINT = '/api/chat'
+const API_ENDPOINT = 'https://n8nchat.agencianous.online/webhook/5c3c4872-da7e-426a-8052-bc427076e475'
+// const API_ENDPOINT = 'https://n8nchat.agencianous.online/webhook-test/5c3c4872-da7e-426a-8052-bc427076e475'
 
 function generateSessionId() {
   return 'sess_' + crypto.randomUUID()
 }
 
-/**
- * Send a message to the chat API.
- * Currently returns a placeholder response.
- * Replace the body of this function to connect to n8n or any backend.
- */
 async function sendChatMessage(message, sessionId) {
-  const payload = {
-    message,
-    session_id: sessionId,
-  }
+  const payload = { message, sessionId };
 
   try {
     const res = await fetch(API_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
     })
-    if (res.ok) {
-      const data = await res.json()
-      return data.reply || data.message || 'Thanks! We received your message.'
-    }
-  } catch {
-    // Backend not connected yet — return placeholder
-  }
 
-  // Placeholder response until backend is connected
-  return "¡Gracias por compartir! Nuestro equipo revisará tus necesidades de automatización y se pondrá en contacto a la brevedad. Mientras tanto, contame más sobre tus flujos de trabajo."
+    if (!res.ok) {
+      throw new Error(`HTTP error ${res.status}`)
+    }
+
+    const data = await res.json()
+
+    // soporta distintos formatos de respuesta de n8n
+    return (
+      data.reply ||
+      data.message ||
+      data.output ||
+      data.text ||
+      "Recibí tu mensaje. Contame un poco más sobre lo que querés automatizar."
+    )
+
+  } catch (error) {
+    console.error("Chat API error:", error)
+
+    return "Hubo un problema conectando con el asistente. Probá nuevamente en unos segundos."
+  }
 }
 
 /* ══════════════════════════════════════════════
